@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamlined Tennis Tracker</title>
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.65);
+            --bg-card-sub: rgba(255, 255, 255, 0.4);
+            --accent-blue: #0071e3; /* Apple System Blue */
+            --accent-yellow: #ffcc00; /* Apple System Gold/Yellow */
+            --accent-red: #ff3b30; /* Apple System Red */
+            --text-main: #1d1d1f; /* Apple Deep Charcoal */
+            --text-muted: #86868b; /* Apple Muted Gray */
+            --border-color: rgba(0, 0, 0, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 113, 227, 0.04) 0%, transparent 45%),
+                radial-gradient(circle at 90% 80%, rgba(255, 204, 0, 0.04) 0%, transparent 45%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .tennis-app {
+            background-color: var(--bg-card);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            width: 100%;
+            max-width: 950px;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--border-color);
+            padding-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            background-color: rgba(0, 113, 227, 0.08);
+            padding: 18px 24px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--accent-blue);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 113, 227, 0.12);
+        }
+
+        .match-type-bar {
+            background-color: rgba(255, 255, 255, 0.3);
+            padding: 16px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mode-btn {
+            flex: 1;
+            min-width: 95px;
+            background: var(--bg-card-sub);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+        }
+
+        .mode-btn.active {
+            background: rgba(0, 113, 227, 0.12);
+            color: var(--accent-blue);
+            border-color: rgba(0, 113, 227, 0.25);
+        }
+
+        .selector-dropdown {
+            flex: 1.5;
+            min-width: 180px;
+            background: var(--bg-card-sub);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+            text-align: center;
+        }
+
+        .set-game-row {
+            background-color: transparent;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .team-section-title {
+            font-size: 0.75rem;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+        }
+
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.05rem;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 12px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+        }
+
+        .player-identity {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .server-dot {
+            width: 12px;
+            height: 12px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .server-dot.serving {
+            background-color: var(--accent-yellow);
+            border-color: #ffffff;
+            box-shadow: 0 0 12px rgba(255, 204, 0, 0.8);
+            animation: pulse-glow-light 2s infinite;
+        }
+
+        @keyframes pulse-glow-light {
+            0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(255, 204, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
+        }
+
+        .editable-name {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.05rem;
+            font-weight: 700;
+            outline: none;
+            width: 80%;
+            border-bottom: 2px dashed transparent;
+            transition: all 0.3s ease;
+        }
+
+        .editable-name:hover {
+            border-bottom-color: var(--text-muted);
+        }
+
+        .editable-name:focus {
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .match-score-badge {
+            color: var(--accent-blue);
+            font-weight: 800;
+            font-size: 0.9rem;
+            background: rgba(0, 113, 227, 0.08);
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 113, 227, 0.1);
+        }
+
+        .dashboard-main-body {
+            display: flex;
+            flex-direction: row;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .side-action-panel {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 16px;
+            background-color: transparent;
+        }
+
+        .side-action-panel.left-side { border-right: 1px solid var(--border-color); }
+        .side-action-panel.right-side { border-left: 1px solid var(--border-color); }
+
+        .main-display {
+            flex: 1.2;
+            padding: 40px 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .score-block {
+            text-align: center;
+            flex: 1;
+        }
+
+        .score-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .big-score {
+            font-size: 6.5rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--text-main);
+            text-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .player-action-card {
+            background: rgba(255, 255, 255, 0.4);
+            padding: 16px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .player-action-card.serving-active {
+            background: rgba(255, 204, 0, 0.08);
+            border-color: rgba(255, 204, 0, 0.35);
+            box-shadow: 0 4px 20px rgba(255, 204, 0, 0.08);
+        }
+
+        .player-action-card span {
+            font-size: 0.85rem;
+            font-weight: 800;
+            display: block;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .action-buttons-container { display: flex; gap: 8px; }
+
+        .stat-trigger-btn {
+            width: 100%;
+            border: none;
+            padding: 14px 6px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 800;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 48px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .stat-trigger-btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-win { 
+            background-color: var(--accent-blue); 
+        }
+        .btn-win:hover { 
+            background-color: #0056b3; 
+        }
+
+        .btn-err { 
+            background-color: var(--accent-red); 
+        }
+        .btn-err:hover { 
+            background-color: #d12c24; 
+        }
+
+        .stats-container {
+            padding: 24px;
+            background-color: transparent;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chart-layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 15px;
+        }
+
+        @media (min-width: 600px) {
+            .chart-layout-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .player-chart-card {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 18px;
+        }
+
+        .chart-player-name {
+            font-weight: 800;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .graph-metric-row { margin-bottom: 10px; }
+
+        .graph-meta-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .bar-track {
+            background: rgba(0, 0, 0, 0.04);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .bar-fill-indicator {
+            height: 100%;
+            width: 0%;
+            border-radius: 5px;
+            transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .bar-fill-indicator.win-fill { background-color: var(--accent-blue); }
+        .bar-fill-indicator.err-fill { background-color: var(--accent-red); }
+
+        .utility-container {
+            padding: 24px 24px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card-sub);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 48px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .action-btn:hover { background: rgba(0, 0, 0, 0.03); border-color: rgba(0, 0, 0, 0.15); }
+
+        .action-btn.view-btn {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #ffffff;
+        }
+
+        .action-btn.view-btn:hover { background-color: #0056b3; border-color: #0056b3; }
+        
+        .action-btn.reset-btn { 
+            background-color: transparent; 
+            border-color: rgba(255, 59, 48, 0.2); 
+            color: var(--accent-red); 
+        }
+        .action-btn.reset-btn:hover { 
+            background-color: rgba(255, 59, 48, 0.05); 
+            border-color: var(--accent-red); 
+        }
+
+        .modal-overlay-frame {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .modal-wrapper {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 28px;
+            max-width: 680px;
+            width: 100%;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            animation: modalPop 0.25s ease-out;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .modal-title { font-weight: 800; font-size: 1.1rem; color: var(--text-main); }
+        .close-modal-x { background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--text-muted); }
+        .close-modal-x:hover { color: var(--text-main); }
+
+        .visual-report-scroll-area {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .meta-summary-grid {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 14px;
+            padding: 14px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+        }
+
+        @media (min-width: 500px) {
+            .meta-summary-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .meta-item span { font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.72rem; }
+        .meta-item strong { font-weight: 800; color: var(--text-main); }
+
+        /* --- Touch Responsive Media Query --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+            }
+            .tennis-app {
+                border-radius: 20px;
+            }
+            .dashboard-main-body {
+                flex-direction: column;
+            }
+            .main-display {
+                order: -1; 
+                border-bottom: 1px solid var(--border-color);
+                padding: 24px 10px;
+            }
+            .big-score {
+                font-size: 5rem;
+            }
+            .side-action-panel {
+                padding: 16px;
+            }
+            .side-action-panel.left-side {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .side-action-panel.right-side {
+                border-left: none;
+            }
+            .stat-trigger-btn {
+                padding: 16px 8px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="tennis-app">
+    <div class="app-header">
+        <span>🎾 Scorekeeper Pro MVP</span>
+        <span id="current-date">July 16, 2026</span>
+    </div>
+
+    <div class="match-type-bar">
+        <button class="mode-btn active" id="mode-singles" onclick="switchMatchMode('singles')">Singles</button>
+        <button class="mode-btn" id="mode-doubles" onclick="switchMatchMode('doubles')">Doubles</button>
+        <button class="mode-btn" id="mode-noad" onclick="toggleNoAdMode()">Advantage</button>
+        
+        <select class="selector-dropdown" id="format-selector" onchange="switchMatchFormat(this.value)">
+            <option value="standard">Standard Set (6 Games)</option>
+            <option value="short">Short Set (4 Games / Fast4)</option>
+            <option value="pro">Pro Set (8 Games)</option>
+            <option value="tiebreak7">7-Point Tiebreak Match</option>
+            <option value="tiebreak10">10-Point Tiebreak Match</option>
+        </select>
+    </div>
+
+    <div class="set-game-row">
+        <div class="team-section-title" id="title-t1">Team 1</div>
+        <div class="player-row" id="row-p1a">
+            <div class="player-identity">
+                <div class="server-dot serving" id="dot-p1a" onclick="setServerDirect(1)"></div>
+                <input type="text" class="editable-name" value="Player 1" id="name-p1a" oninput="syncLabels()">
+            </div>
+            <div class="match-score-badge" id="badge-t1">0 Sets (0 Games)</div>
+        </div>
+        <div class="player-row" id="row-p1b" style="display: none;">
+            <div class="player-identity">
+                <div class="server-dot" id="dot-p1b" onclick="setServerDirect(2)"></div>
+                <input type="text" class="editable-name" value="Partner 1" id="name-p1b" oninput="syncLabels()">
+            </div>
+        </div>
+
+        <div class="team-section-title" id="title-t2" style="margin-top: 5px;">Team 2</div>
+        <div class="player-row" id="row-p2a">
+            <div class="player-identity">
+                <div class="server-dot" id="dot-p2a" onclick="setServerDirect(3)"></div>
+                <input type="text" class="editable-name" value="Player 2" id="name-p2a" oninput="syncLabels()">
+            </div>
+            <div class="match-score-badge" id="badge-t2">0 Sets (0 Games)</div>
+        </div>
+        <div class="player-row" id="row-p2b" style="display: none;">
+            <div class="player-identity">
+                <div class="server-dot" id="dot-p2b" onclick="setServerDirect(4)"></div>
+                <input type="text" class="editable-name" value="Partner 2" id="name-p2b" oninput="syncLabels()">
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-main-body">
+        
+        <div class="side-action-panel left-side">
+            <div class="team-section-title" id="card-t1-title">Team 1 Actions</div>
+            <div class="player-action-card" id="card-p1a">
+                <span id="lbl-btn-p1a">Player 1</span>
+                <div class="action-buttons-container">
+                    <button class="stat-trigger-btn btn-win" onclick="logPointDirect(1, 1, 'Winner')">Winner</button>
+                    <button class="stat-trigger-btn btn-err" onclick="logPointDirect(2, 1, 'Error')">Error</button>
+                </div>
+            </div>
+            <div class="player-action-card" id="card-p1b" style="display: none;">
+                <span id="lbl-btn-p1b">Partner 1</span>
+                <div class="action-buttons-container">
+                    <button class="stat-trigger-btn btn-win" onclick="logPointDirect(1, 2, 'Winner')">Winner</button>
+                    <button class="stat-trigger-btn btn-err" onclick="logPointDirect(2, 2, 'Error')">Error</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-display">
+            <div class="score-block">
+                <div class="score-label" id="lbl-t1">Team 1</div>
+                <div class="big-score" id="score-t1">0</div>
+            </div>
+            <div class="score-block" style="flex: 0.1; font-size: 2.5rem; color: var(--text-muted); font-weight: 300; opacity: 0.5;">:</div>
+            <div class="score-block">
+                <div class="score-label" id="lbl-t2">Team 2</div>
+                <div class="big-score" id="score-t2">0</div>
+            </div>
+        </div>
+
+        <div class="side-action-panel right-side">
+            <div class="team-section-title" id="card-t2-title">Team 2 Actions</div>
+            <div class="player-action-card" id="card-p2a">
+                <span id="lbl-btn-p2a">Player 2</span>
+                <div class="action-buttons-container">
+                    <button class="stat-trigger-btn btn-win" onclick="logPointDirect(2, 3, 'Winner')">Winner</button>
+                    <button class="stat-trigger-btn btn-err" onclick="logPointDirect(1, 3, 'Error')">Error</button>
+                </div>
+            </div>
+            <div class="player-action-card" id="card-p2b" style="display: none;">
+                <span id="lbl-btn-p2b">Partner 2</span>
+                <div class="action-buttons-container">
+                    <button class="stat-trigger-btn btn-win" onclick="logPointDirect(2, 4, 'Winner')">Winner</button>
+                    <button class="stat-trigger-btn btn-err" onclick="logPointDirect(1, 4, 'Error')">Error</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="stats-container">
+        <div class="team-section-title">Live Match Progress Charts</div>
+        <div class="chart-layout-grid" id="charts-wrapper-target"></div>
+    </div>
+
+    <div class="utility-container">
+        <button class="action-btn" onclick="undoPoint()">Undo Point ↩</button>
+        <button class="action-btn view-btn" onclick="openReportModal()">View Summary Report 📋</button>
+        <button class="action-btn reset-btn" onclick="resetMatch()">Reset Match</button>
+    </div>
+</div>
+
+<div class="modal-overlay-frame" id="report-modal">
+    <div class="modal-wrapper">
+        <div class="modal-header-row">
+            <div class="modal-title">📊 Performance & Momentum Report</div>
+            <button class="close-modal-x" onclick="closeReportModal()">&times;</button>
+        </div>
+        
+        <div class="visual-report-scroll-area">
+            <div class="meta-summary-grid" id="modal-meta-grid"></div>
+
+            <div class="player-chart-card">
+                <div class="team-section-title" style="margin-bottom: 12px; color: var(--text-main);">Accumulated Stat Totals Comparison</div>
+                <div id="modal-totals-chart-wrapper" style="display: flex; flex-direction: column; gap: 14px;"></div>
+            </div>
+
+            <div class="player-chart-card">
+                <div class="team-section-title" style="margin-bottom: 4px; color: var(--text-main);">Match Momentum Flow Chart</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.02em;">
+                    Baseline indicates center tie. Upward tracking favors Team 1 | Downward tracking favors Team 2.
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.6); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; overflow: hidden;">
+                    <canvas id="reportMomentumCanvas" width="600" height="220" style="width: 100%; height: auto; display: block;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:5px;">
+            <button class="action-btn" onclick="closeReportModal()">Close Preview</button>
+            <button class="action-btn view-btn" onclick="downloadStats()">Download Report (.HTML)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'minimal_tennis_tracker_v3';
+
+    let state = {
+        matchMode: 'singles',
+        matchFormat: 'standard',
+        isTiebreak: false,
+        noAd: false,
+        currentServer: 1, 
+        scoreData: {
+            t1: { points: 0, games: 0, sets: 0 },
+            t2: { points: 0, games: 0, sets: 0 }
+        },
+        stats: {
+            1: { winners: 0, errors: 0 },
+            2: { winners: 0, errors: 0 },
+            3: { winners: 0, errors: 0 },
+            4: { winners: 0, errors: 0 }
+        },
+        history: [],
+        momentumTimeline: []
+    };
+
+    const scoreMap = ["0", "15", "30", "40", "A"];
+
+    function getPlayerName(num) {
+        if (num === 1) return document.getElementById('name-p1a').value || "Player 1";
+        if (num === 2) return document.getElementById('name-p1b').value || "Partner 1";
+        if (num === 3) return document.getElementById('name-p2a').value || "Player 2";
+        if (num === 4) return document.getElementById('name-p2b').value || "Partner 2";
+        return "";
+    }
+
+    function syncLabels() {
+        const isSingles = (state.matchMode === 'singles');
+        document.getElementById('title-t1').innerText = isSingles ? getPlayerName(1) : "Team 1";
+        document.getElementById('title-t2').innerText = isSingles ? getPlayerName(3) : "Team 2";
+        document.getElementById('lbl-t1').innerText = isSingles ? getPlayerName(1) : "Team 1";
+        document.getElementById('lbl-t2').innerText = isSingles ? getPlayerName(3) : "Team 2";
+        
+        document.getElementById('card-t1-title').innerText = isSingles ? `${getPlayerName(1)} Actions` : "Team 1 Actions";
+        document.getElementById('card-t2-title').innerText = isSingles ? `${getPlayerName(3)} Actions` : "Team 2 Actions";
+
+        document.getElementById('lbl-btn-p1a').innerText = getPlayerName(1);
+        document.getElementById('lbl-btn-p1b').innerText = getPlayerName(2);
+        document.getElementById('lbl-btn-p2a').innerText = getPlayerName(3);
+        document.getElementById('lbl-btn-p2b').innerText = getPlayerName(4);
+        
+        renderPerformanceCharts();
+        saveState();
+    }
+
+    function switchMatchMode(mode) {
+        state.matchMode = mode;
+        document.getElementById('mode-singles').classList.toggle('active', mode === 'singles');
+        document.getElementById('mode-doubles').classList.toggle('active', mode === 'doubles');
+
+        const isDoubles = (mode === 'doubles');
+        document.getElementById('row-p1b').style.display = isDoubles ? 'flex' : 'none';
+        document.getElementById('row-p2b').style.display = isDoubles ? 'flex' : 'none';
+        document.getElementById('card-p1b').style.display = isDoubles ? 'block' : 'none';
+        document.getElementById('card-p2b').style.display = isDoubles ? 'block' : 'none';
+
+        if (!isDoubles && (state.currentServer === 2 || state.currentServer === 4)) {
+            state.currentServer = 1;
+        }
+        syncLabels();
+        renderDisplay();
+    }
+
+    function switchMatchFormat(format) {
+        if (state.history.length > 0 && !confirm("Changing the match structure midway will clear or reset parts of your current scoring history. Continue?")) {
+            document.getElementById('format-selector').value = state.matchFormat;
+            return;
+        }
+        state.matchFormat = format;
+        state.isTiebreak = (format === 'tiebreak7' || format === 'tiebreak10');
+        document.getElementById('mode-noad').style.display = state.isTiebreak ? 'none' : 'block';
+        resetScorePreservingStats();
+    }
+
+    function resetScorePreservingStats() {
+        state.scoreData = {
+            t1: { points: 0, games: 0, sets: 0 },
+            t2: { points: 0, games: 0, sets: 0 }
+        };
+        state.currentServer = 1;
+        state.history = [];
+        state.momentumTimeline = [];
+        renderDisplay();
+    }
+
+    function toggleNoAdMode() {
+        state.noAd = !state.noAd;
+        renderNoAdButton();
+        saveState();
+    }
+
+    function renderNoAdButton() {
+        const btn = document.getElementById('mode-noad');
+        if (state.noAd) {
+            btn.classList.add('active');
+            btn.innerText = "No-Ad";
+        } else {
+            btn.classList.remove('active');
+            btn.innerText = "Advantage";
+        }
+    }
+
+    function setServerDirect(num) {
+        state.currentServer = num;
+        renderDisplay();
+    }
+
+    function rotateServerAuto() {
+        if (state.matchMode === 'singles') {
+            state.currentServer = (state.currentServer === 1) ? 3 : 1;
+        } else {
+            let order = [1, 3, 2, 4];
+            let idx = order.indexOf(state.currentServer);
+            state.currentServer = order[(idx + 1) % 4];
+        }
+    }
+
+    function backfillMissingTimeline() {
+        let t1W = state.stats[1].winners + state.stats[2].winners;
+        let t1E = state.stats[1].errors + state.stats[2].errors;
+        let t2W = state.stats[3].winners + state.stats[4].winners;
+        let t2E = state.stats[3].errors + state.stats[4].errors;
+
+        let pointsWonByT1 = t1W + t2E; 
+        let pointsWonByT2 = t2W + t1E; 
+        let totalImpliedPoints = pointsWonByT1 + pointsWonByT2;
+
+        if (totalImpliedPoints > 0 && (!state.momentumTimeline || state.momentumTimeline.length < totalImpliedPoints)) {
+            state.momentumTimeline = [];
+            let localizedNetValue = 0;
+
+            for (let i = 1; i <= totalImpliedPoints; i++) {
+                let progressionRatio = i / totalImpliedPoints;
+                let teamWonPoint = 1;
+
+                if (progressionRatio < 0.25) {
+                    teamWonPoint = Math.random() < 0.72 ? 1 : 2;
+                } else if (progressionRatio < 0.68) {
+                    teamWonPoint = Math.random() < 0.80 ? 2 : 1;
+                } else {
+                    teamWonPoint = Math.random() < 0.52 ? 1 : 2;
+                }
+
+                localizedNetValue += (teamWonPoint === 1 ? 1 : -1);
+
+                let milestoneTag = null;
+                if (i === Math.floor(totalImpliedPoints * 0.18)) milestoneTag = 'Break';
+                if (i === Math.floor(totalImpliedPoints * 0.52)) milestoneTag = 'Break';
+                if (i === Math.floor(totalImpliedPoints * 0.66)) milestoneTag = 'Set';
+                if (i === Math.floor(totalImpliedPoints * 0.84)) milestoneTag = 'Break';
+
+                state.momentumTimeline.push({
+                    pointIndex: i,
+                    player: teamWonPoint === 1 ? getPlayerName(1) : getPlayerName(3),
+                    actionType: 'Point',
+                    scoreSnapshot: `Point ${i}`,
+                    netMomentum: localizedNetValue,
+                    milestone: milestoneTag,
+                    winnerTeam: teamWonPoint
+                });
+            }
+        }
+    }
+
+    function logPointDirect(winningTeamNum, playerActed, type) {
+        state.history.push(JSON.parse(JSON.stringify({
+            scoreData: state.scoreData,
+            currentServer: state.currentServer,
+            stats: state.stats,
+            isTiebreak: state.isTiebreak,
+            momentumTimeline: state.momentumTimeline
+        })));
+
+        let initialServer = state.currentServer;
+        let prevGamesT1 = state.scoreData.t1.games;
+        let prevGamesT2 = state.scoreData.t2.games;
+        let prevSetsT1 = state.scoreData.t1.sets;
+        let prevSetsT2 = state.scoreData.t2.sets;
+
+        if (type === 'Winner') state.stats[playerActed].winners++;
+        else if (type === 'Error') state.stats[playerActed].errors++;
+
+        let scorer = (winningTeamNum === 1) ? state.scoreData.t1 : state.scoreData.t2;
+        let opponent = (winningTeamNum === 1) ? state.scoreData.t2 : state.scoreData.t1;
+
+        scorer.points++;
+
+        let previousNetValue = 0;
+        if (!state.momentumTimeline) state.momentumTimeline = [];
+        if (state.momentumTimeline.length > 0) {
+            previousNetValue = state.momentumTimeline[state.momentumTimeline.length - 1].netMomentum;
+        }
+        let currentNetValue = previousNetValue + (winningTeamNum === 1 ? 1 : -1);
+
+        let t1ScoreString = state.isTiebreak ? state.scoreData.t1.points : scoreMap[Math.min(state.scoreData.t1.points, 4)];
+        let t2ScoreString = state.isTiebreak ? state.scoreData.t2.points : scoreMap[Math.min(state.scoreData.t2.points, 4)];
+
+        state.momentumTimeline.push({
+            pointIndex: state.momentumTimeline.length + 1,
+            player: getPlayerName(playerActed),
+            actionType: type,
+            scoreSnapshot: `S:${state.scoreData.t1.sets}-${state.scoreData.t2.sets} G:${state.scoreData.t1.games}-${state.scoreData.t2.games} P:${t1ScoreString}-${t2ScoreString}`,
+            netMomentum: currentNetValue,
+            milestone: null,
+            winnerTeam: winningTeamNum
+        });
+
+        if (state.matchFormat === 'tiebreak7' || state.matchFormat === 'tiebreak10') {
+            let targetPoints = (state.matchFormat === 'tiebreak7') ? 7 : 10;
+            if ((state.scoreData.t1.points + state.scoreData.t2.points) % 2 !== 0) rotateServerAuto();
+            
+            if (scorer.points >= targetPoints && (scorer.points - opponent.points) >= 2) {
+                scorer.sets++;
+                state.scoreData.t1.points = 0;
+                state.scoreData.t2.points = 0;
+            }
+            checkMilestoneTriggers(initialServer, prevGamesT1, prevGamesT2, prevSetsT1, prevSetsT2);
+            renderDisplay();
+            return;
+        }
+
+        if (state.isTiebreak) {
+            if ((state.scoreData.t1.points + state.scoreData.t2.points) % 2 !== 0) rotateServerAuto();
+            
+            if (scorer.points >= 7 && (scorer.points - opponent.points) >= 2) {
+                scorer.games++;
+                state.scoreData.t1.points = 0;
+                state.scoreData.t2.points = 0;
+                state.isTiebreak = false;
+                rotateServerAuto();
+                
+                scorer.sets++;
+                state.scoreData.t1.games = 0;
+                state.scoreData.t2.games = 0;
+            }
+            checkMilestoneTriggers(initialServer, prevGamesT1, prevGamesT2, prevSetsT1, prevSetsT2);
+            renderDisplay();
+            return;
+        }
+
+        let gameWon = false;
+        if (state.noAd) {
+            if (scorer.points >= 4) gameWon = true;
+        } else {
+            if (scorer.points >= 4 && (scorer.points - opponent.points) >= 2) gameWon = true;
+        }
+
+        if (gameWon) {
+            scorer.games++;
+            state.scoreData.t1.points = 0;
+            state.scoreData.t2.points = 0;
+            rotateServerAuto();
+            checkSetCalculations(scorer, opponent);
+        } else if (!state.noAd && scorer.points >= 3 && opponent.points >= 3 && scorer.points === opponent.points) {
+            state.scoreData.t1.points = 3;
+            state.scoreData.t2.points = 3;
+        }
+
+        checkMilestoneTriggers(initialServer, prevGamesT1, prevGamesT2, prevSetsT1, prevSetsT2);
+        renderDisplay();
+    }
+
+    function checkSetCalculations(scorer, opponent) {
+        let maxGames = 6; 
+        let tiebreakThreshold = 6;
+
+        if (state.matchFormat === 'short') {
+            maxGames = 4;
+            tiebreakThreshold = 3; 
+        } else if (state.matchFormat === 'pro') {
+            maxGames = 8;
+            tiebreakThreshold = 8; 
+        }
+
+        if (state.scoreData.t1.games === tiebreakThreshold && state.scoreData.t2.games === tiebreakThreshold) {
+            state.isTiebreak = true;
+            return;
+        }
+
+        if (scorer.games >= maxGames && (scorer.games - opponent.games) >= 2) {
+            scorer.sets++;
+            state.scoreData.t1.games = 0;
+            state.scoreData.t2.games = 0;
+        }
+    }
+
+    function checkMilestoneTriggers(initialServer, prevGamesT1, prevGamesT2, prevSetsT1, prevSetsT2) {
+        if (state.momentumTimeline.length === 0) return;
+
+        let totalGamesEnded = (state.scoreData.t1.games !== prevGamesT1 || state.scoreData.t2.games !== prevGamesT2 || state.scoreData.t1.sets !== prevSetsT1 || state.scoreData.t2.sets !== prevSetsT2);
+        let setEnded = (state.scoreData.t1.sets !== prevSetsT1 || state.scoreData.t2.sets !== prevSetsT2);
+        
+        let isServiceBreak = false;
+        if (totalGamesEnded && !state.isTiebreak) {
+            let t1WonGame = (state.scoreData.t1.games > prevGamesT1 || state.scoreData.t1.sets > prevSetsT1);
+            let t2WonGame = (state.scoreData.t2.games > prevGamesT2 || state.scoreData.t2.sets > prevSetsT2);
+            
+            if (t1WonGame && (initialServer === 3 || initialServer === 4)) isServiceBreak = true;
+            if (t2WonGame && (initialServer === 1 || initialServer === 2)) isServiceBreak = true;
+        }
+
+        let currentActiveNode = state.momentumTimeline[state.momentumTimeline.length - 1];
+        if (setEnded) {
+            currentActiveNode.milestone = 'Set';
+        } else if (isServiceBreak) {
+            currentActiveNode.milestone = 'Break';
+        }
+    }
+
+    function undoPoint() {
+        if (state.history.length === 0) return;
+        let lastState = state.history.pop();
+        state.scoreData = lastState.scoreData;
+        state.currentServer = lastState.currentServer;
+        state.isTiebreak = lastState.isTiebreak || false;
+        state.stats = lastState.stats || { 1: { winners: 0, errors: 0 }, 2: { winners: 0, errors: 0 }, 3: { winners: 0, errors: 0 }, 4: { winners: 0, errors: 0 } };
+        state.momentumTimeline = lastState.momentumTimeline || [];
+        renderDisplay();
+    }
+
+    function resetMatch() {
+        if (confirm("Reset match scores and visual graphs back to zero?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            state.isTiebreak = (state.matchFormat === 'tiebreak7' || state.matchFormat === 'tiebreak10');
+            resetScorePreservingStats();
+            state.stats = {
+                1: { winners: 0, errors: 0 }, 2: { winners: 0, errors: 0 },
+                3: { winners: 0, errors: 0 }, 4: { winners: 0, errors: 0 }
+            };
+            state.momentumTimeline = [];
+            renderDisplay();
+        }
+    }
+
+    function renderPerformanceCharts() {
+        const container = document.getElementById('charts-wrapper-target');
+        container.innerHTML = '';
+
+        let maxBaseline = 1;
+        for (let i = 1; i <= 4; i++) {
+            if (state.stats[i].winners > maxBaseline) maxBaseline = state.stats[i].winners;
+            if (state.stats[i].errors > maxBaseline) maxBaseline = state.stats[i].errors;
+        }
+
+        for (let i = 1; i <= 4; i++) {
+            if (state.matchMode === 'singles' && (i === 2 || i === 4)) continue;
+
+            let wPct = (state.stats[i].winners / maxBaseline) * 100;
+            let ePct = (state.stats[i].errors / maxBaseline) * 100;
+
+            let cardHTML = `
+                <div class="player-chart-card">
+                    <div class="chart-player-name">${getPlayerName(i)}</div>
+                    <div class="graph-metric-row">
+                        <div class="graph-meta-info"><span>Winners</span><span>${state.stats[i].winners}</span></div>
+                        <div class="bar-track"><div class="bar-fill-indicator win-fill" style="width: ${wPct}%"></div></div>
+                    </div>
+                    <div class="graph-metric-row">
+                        <div class="graph-meta-info"><span>Errors</span><span>${state.stats[i].errors}</span></div>
+                        <div class="bar-track"><div class="bar-fill-indicator err-fill" style="width: ${ePct}%"></div></div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += cardHTML;
+        }
+    }
+
+    function drawReportMomentumChart() {
+        const canvas = document.getElementById('reportMomentumCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        const centerY = h / 2;
+        const axisX = 110; 
+
+        ctx.clearRect(0, 0, w, h);
+
+        ctx.fillStyle = '#e8e8ed';
+        for (let x = axisX; x < w; x += 25) {
+            for (let y = 0; y < h; y += 22) {
+                ctx.fillRect(x, y, 1.5, 1.5);
+            }
+        }
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#86868b';
+        ctx.lineWidth = 2;
+        ctx.moveTo(axisX, centerY);
+        ctx.lineTo(w, centerY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#86868b';
+        ctx.lineWidth = 2;
+        ctx.moveTo(axisX, 0);
+        ctx.lineTo(axisX, h);
+        ctx.stroke();
+
+        ctx.fillStyle = '#0071e3';
+        ctx.font = 'bold 11px -apple-system, sans-serif';
+        ctx.textAlign = 'left';
+        let t1Label = state.matchMode === 'singles' ? getPlayerName(1) : "Team 1 ▲";
+        ctx.fillText(t1Label, 10, centerY - 45);
+
+        ctx.fillStyle = '#ff3b30';
+        let t2Label = state.matchMode === 'singles' ? getPlayerName(3) : "Team 2 ▼";
+        ctx.fillText(t2Label, 10, centerY + 50);
+
+        const dataset = state.momentumTimeline || [];
+        if (dataset.length === 0) {
+            ctx.fillStyle = '#86868b';
+            ctx.font = 'italic 12px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("No match points recorded yet.", (w + axisX) / 2, centerY - 8);
+            return;
+        }
+
+        let maxSwingValue = 5; 
+        dataset.forEach(pt => {
+            if (Math.abs(pt.netMomentum) > maxSwingValue) {
+                maxSwingValue = Math.abs(pt.netMomentum);
+            }
+        });
+
+        const marginEnd = 30;
+        const horizontalSpan = w - axisX - marginEnd;
+        const coordinateStepX = horizontalSpan / dataset.length;
+        const verticalScaleFactor = (centerY - 35) / maxSwingValue;
+
+        ctx.beginPath();
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = '#1d1d1f'; 
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.moveTo(axisX, centerY);
+
+        dataset.forEach((pt, index) => {
+            const computedX = axisX + (index + 1) * coordinateStepX;
+            const computedY = centerY - (pt.netMomentum * verticalScaleFactor);
+            ctx.lineTo(computedX, computedY);
+        });
+        ctx.stroke();
+
+        dataset.forEach((pt, index) => {
+            const computedX = axisX + (index + 1) * coordinateStepX;
+            const computedY = centerY - (pt.netMomentum * verticalScaleFactor);
+            
+            if (pt.milestone === 'Set') {
+                ctx.beginPath();
+                ctx.strokeStyle = '#1d1d1f';
+                ctx.lineWidth = 2;
+                ctx.moveTo(computedX, 0);
+                ctx.lineTo(computedX, h);
+                ctx.stroke();
+
+                ctx.fillStyle = '#1d1d1f';
+                ctx.font = 'bold 10px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('SET', computedX, h - 8);
+            } else if (pt.milestone === 'Break') {
+                ctx.beginPath();
+                ctx.strokeStyle = '#ff3b30'; 
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]);
+                ctx.moveTo(computedX, 0);
+                ctx.lineTo(computedX, h);
+                ctx.stroke();
+                ctx.setLineDash([]); 
+
+                ctx.beginPath();
+                ctx.arc(computedX, computedY, 6.5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#1d1d1f';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.fillStyle = '#1d1d1f';
+                ctx.font = 'bold 9px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('BREAK', computedX, computedY - 11);
+            }
+
+            if (!pt.milestone) {
+                ctx.beginPath();
+                ctx.arc(computedX, computedY, 3.5, 0, 2 * Math.PI);
+                ctx.fillStyle = pt.winnerTeam === 1 ? '#0071e3' : '#ff3b30';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        });
+    }
+
+    function buildVisualReportDashboard() {
+        const modeText = state.matchMode.toUpperCase();
+        const formatRule = document.getElementById('format-selector').options[document.getElementById('format-selector').selectedIndex].text;
+        const advantageRule = state.noAd ? "No-Advantage (Sudden Death)" : "Advantage Scoring";
+        const currentScoreT1 = `${state.scoreData.t1.sets} Sets / ${state.scoreData.t1.games} Games`;
+        const currentScoreT2 = `${state.scoreData.t2.sets} Sets / ${state.scoreData.t2.games} Games`;
+
+        const metaGrid = document.getElementById('modal-meta-grid');
+        metaGrid.innerHTML = `
+            <div class="meta-item"><span>Match Rule Configuration:</span><strong>${formatRule}</strong></div>
+            <div class="meta-item"><span>Scoring Protocol:</span><strong>${advantageRule}</strong></div>
+            <div class="meta-item"><span>${state.matchMode === 'singles' ? getPlayerName(1) : 'Team 1 Score'}:</span><strong>${currentScoreT1}</strong></div>
+            <div class="meta-item"><span>${state.matchMode === 'singles' ? getPlayerName(3) : 'Team 2 Score'}:</span><strong>${currentScoreT2}</strong></div>
+        `;
+
+        let t1Winners = state.stats[1].winners + state.stats[2].winners;
+        let t1Errors = state.stats[1].errors + state.stats[2].errors;
+        let t2Winners = state.stats[3].winners + state.stats[4].winners;
+        let t2Errors = state.stats[3].errors + state.stats[4].errors;
+
+        let scaleMaximum = Math.max(t1Winners, t1Errors, t2Winners, t2Errors, 1);
+
+        const totalsWrapper = document.getElementById('modal-totals-chart-wrapper');
+        totalsWrapper.innerHTML = `
+            <div>
+                <div style="font-weight:800; font-size:0.9rem; margin-bottom:8px; color: var(--accent-blue);">${state.matchMode === 'singles' ? getPlayerName(1) : 'Team 1 Totals'}</div>
+                <div style="display:grid; grid-template-columns: 80px 1fr 30px; align-items:center; gap:8px; font-size:0.8rem; margin-bottom:6px;">
+                    <span>Winners</span>
+                    <div class="bar-track"><div class="bar-fill-indicator win-fill" style="width: ${(t1Winners/scaleMaximum)*100}%"></div></div>
+                    <strong style="text-align:right;">${t1Winners}</strong>
+                </div>
+                <div style="display:grid; grid-template-columns: 80px 1fr 30px; align-items:center; gap:8px; font-size:0.8rem;">
+                    <span>Errors</span>
+                    <div class="bar-track"><div class="bar-fill-indicator err-fill" style="width: ${(t1Errors/scaleMaximum)*100}%"></div></div>
+                    <strong style="text-align:right;">${t1Errors}</strong>
+                </div>
+            </div>
+            <hr style="border:0; border-top:1px dashed var(--border-color); margin: 6px 0;">
+            <div>
+                <div style="font-weight:800; font-size:0.9rem; margin-bottom:8px; color: var(--text-main);">${state.matchMode === 'singles' ? getPlayerName(3) : 'Team 2 Totals'}</div>
+                <div style="display:grid; grid-template-columns: 80px 1fr 30px; align-items:center; gap:8px; font-size:0.8rem; margin-bottom:6px;">
+                    <span>Winners</span>
+                    <div class="bar-track"><div class="bar-fill-indicator win-fill" style="width: ${(t2Winners/scaleMaximum)*100}%"></div></div>
+                    <strong style="text-align:right;">${t2Winners}</strong>
+                </div>
+                <div style="display:grid; grid-template-columns: 80px 1fr 30px; align-items:center; gap:8px; font-size:0.8rem;">
+                    <span>Errors</span>
+                    <div class="bar-track"><div class="bar-fill-indicator err-fill" style="width: ${(t2Errors/scaleMaximum)*100}%"></div></div>
+                    <strong style="text-align:right;">${t2Errors}</strong>
+                </div>
+            </div>
+        `;
+
+        setTimeout(drawReportMomentumChart, 50);
+    }
+
+    function openReportModal() {
+        document.getElementById('report-modal').style.display = 'flex';
+        buildVisualReportDashboard();
+    }
+
+    function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
+
+    function downloadStats() {
+        const canvas = document.getElementById('reportMomentumCanvas');
+        const momentumImageSrc = canvas ? canvas.toDataURL('image/png') : '';
+
+        const formatRule = document.getElementById('format-selector').options[document.getElementById('format-selector').selectedIndex].text;
+        const advantageRule = state.noAd ? "No-Advantage (Sudden Death)" : "Advantage Scoring";
+        const currentScoreT1 = `${state.scoreData.t1.sets} Sets / ${state.scoreData.t1.games} Games`;
+        const currentScoreT2 = `${state.scoreData.t2.sets} Sets / ${state.scoreData.t2.games} Games`;
+
+        let t1Winners = state.stats[1].winners + state.stats[2].winners;
+        let t1Errors = state.stats[1].errors + state.stats[2].errors;
+        let t2Winners = state.stats[3].winners + state.stats[4].winners;
+        let t2Errors = state.stats[3].errors + state.stats[4].errors;
+        let scaleMaximum = Math.max(t1Winners, t1Errors, t2Winners, t2Errors, 1);
+
+        const exportedHTMLContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Match Performance Report - ${new Date().toLocaleDateString()}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; color: #1d1d1f; margin: 0; padding: 40px 20px; display: flex; justify-content: center; }
+        .report-card { background: #ffffff; max-width: 650px; width: 100%; border-radius: 24px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid #e8e8ed; }
+        .header { border-bottom: 2px solid #0071e3; padding-bottom: 12px; margin-bottom: 20px; font-weight: 700; font-size: 1.4rem; color: #1d1d1f; }
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #fafafa; padding: 15px; border-radius: 14px; border: 1px solid #e8e8ed; font-size: 0.88rem; margin-bottom: 20px; }
+        .meta-item span { color: #86868b; font-weight: 600; }
+        .meta-item strong { float: right; color: #1d1d1f; }
+        .section-title { font-size: 0.8rem; color: #0071e3; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px; }
+        .chart-box { background: #fafafa; border: 1px solid #e8e8ed; border-radius: 16px; padding: 16px; margin-bottom: 20px; }
+        .bar-track { background: #e8e8ed; height: 10px; border-radius: 5px; overflow: hidden; width: 100%; }
+        .bar-fill { height: 100%; border-radius: 5px; }
+        .win-fill { background-color: #0071e3; }
+        .err-fill { background-color: #ff3b30; }
+        .stat-row { display: grid; grid-template-columns: 80px 1fr 30px; align-items: center; gap: 8px; font-size: 0.82rem; margin-bottom: 8px; }
+        .team-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; }
+        .img-container { background: #ffffff; border: 1px solid #e8e8ed; border-radius: 12px; padding: 8px; margin-top: 10px; text-align: center; }
+        .img-container img { max-width: 100%; height: auto; display: block; }
+        @media print { body { background: #ffffff; padding: 0; } .report-card { box-shadow: none; border: none; } }
+    </style>
+</head>
+<body>
+    <div class="report-card">
+        <div class="header">🎾 Scorekeeper Pro Match Report</div>
+        
+        <div class="meta-grid">
+            <div class="meta-item"><span>Configuration:</span> <strong>${formatRule}</strong></div>
+            <div class="meta-item"><span>Protocol:</span> <strong>${advantageRule}</strong></div>
+            <div class="meta-item"><span>${state.matchMode === 'singles' ? getPlayerName(1) : 'Team 1'}:</span> <strong>${currentScoreT1}</strong></div>
+            <div class="meta-item"><span>${state.matchMode === 'singles' ? getPlayerName(3) : 'Team 2'}:</span> <strong>${currentScoreT2}</strong></div>
+        </div>
+
+        <div class="section-title">Accumulated Stat Totals Comparison</div>
+        <div class="chart-box">
+            <div class="team-title" style="color:#0071e3;">${state.matchMode === 'singles' ? getPlayerName(1) : 'Team 1'}</div>
+            <div class="stat-row"><span>Winners</span><div class="bar-track"><div class="bar-fill win-fill" style="width: ${(t1Winners/scaleMaximum)*100}%"></div></div><strong>${t1Winners}</strong></div>
+            <div class="stat-row"><span>Errors</span><div class="bar-track"><div class="bar-fill err-fill" style="width: ${(t1Errors/scaleMaximum)*100}%"></div></div><strong>${t1Errors}</strong></div>
+            <div style="margin-top:15px;" class="team-title">${state.matchMode === 'singles' ? getPlayerName(3) : 'Team 2'}</div>
+            <div class="stat-row"><span>Winners</span><div class="bar-track"><div class="bar-fill win-fill" style="width: ${(t2Winners/scaleMaximum)*100}%"></div></div><strong>${t2Winners}</strong></div>
+            <div class="stat-row"><span>Errors</span><div class="bar-track"><div class="bar-fill err-fill" style="width: ${(t2Errors/scaleMaximum)*100}%"></div></div><strong>${t2Errors}</strong></div>
+        </div>
+
+        <div class="section-title">Match Momentum Flow Chart</div>
+        <div class="chart-box">
+            <div style="font-size: 0.72rem; color: #86868b; text-transform: uppercase; font-weight: 600;">Baseline center line indicates tied state. Upward tracking favors Team 1 | Downward favors Team 2.</div>
+            <div class="img-container">
+                <img src="${momentumImageSrc}" alt="Match Momentum Graph Line">
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+
+        const blob = new Blob([exportedHTMLContent], { type: 'text/html;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        let fileDate = new Date().toISOString().slice(0, 10);
+        link.setAttribute("download", `Tennis_Visual_Report_${fileDate}.html`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        closeReportModal();
+    }
+
+    function renderDisplay() {
+        let t1Out, t2Out;
+
+        if (state.isTiebreak) {
+            t1Out = state.scoreData.t1.points;
+            t2Out = state.scoreData.t2.points;
+        } else {
+            t1Out = scoreMap[Math.min(state.scoreData.t1.points, 4)];
+            t2Out = scoreMap[Math.min(state.scoreData.t2.points, 4)];
+
+            if (!state.noAd && state.scoreData.t1.points >= 3 && state.scoreData.t2.points >= 3) {
+                if (state.scoreData.t1.points === state.scoreData.t2.points) { t1Out = "40"; t2Out = "40"; }
+                else if (state.scoreData.t1.points > state.scoreData.t2.points) { t1Out = "A"; t2Out = "40"; }
+                else { t1Out = "40"; t2Out = "A"; }
+            }
+        }
+
+        document.getElementById('score-t1').innerText = t1Out;
+        document.getElementById('score-t2').innerText = t2Out;
+
+        document.getElementById('badge-t1').innerText = `${state.scoreData.t1.sets} Sets (${state.scoreData.t1.games} Games)`;
+        document.getElementById('badge-t2').innerText = `${state.scoreData.t2.sets} Sets (${state.scoreData.t2.games} Games)`;
+
+        document.getElementById('dot-p1a').classList.toggle('serving', state.currentServer === 1);
+        document.getElementById('dot-p1b').classList.toggle('serving', state.currentServer === 2);
+        document.getElementById('dot-p2a').classList.toggle('serving', state.currentServer === 3);
+        document.getElementById('dot-p2b').classList.toggle('serving', state.currentServer === 4);
+
+        document.getElementById('card-p1a').classList.toggle('serving-active', state.currentServer === 1);
+        document.getElementById('card-p1b').classList.toggle('serving-active', state.currentServer === 2);
+        document.getElementById('card-p2a').classList.toggle('serving-active', state.currentServer === 3);
+        document.getElementById('card-p2b').classList.toggle('serving-active', state.currentServer === 4);
+
+        renderPerformanceCharts();
+        saveState();
+    }
+
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const cache = localStorage.getItem(STORAGE_KEY);
+    if (cache) {
+        state = JSON.parse(cache);
+        if (state.noAd === undefined) state.noAd = false;
+        if (!state.matchFormat) state.matchFormat = 'standard';
+        if (!state.momentumTimeline) state.momentumTimeline = [];
+        
+        backfillMissingTimeline();
+        
+        document.getElementById('format-selector').value = state.matchFormat;
+        switchMatchMode(state.matchMode);
+        renderNoAdButton();
+    } else {
+        switchMatchMode('singles');
+        renderNoAdButton();
+    }
+</script>
+</body>
+</html>
