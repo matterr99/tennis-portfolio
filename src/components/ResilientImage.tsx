@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface ResilientImageProps {
   src: string;
@@ -13,9 +13,40 @@ export const ResilientImage: React.FC<ResilientImageProps> = ({
   className = '',
   fallbackLabel = 'Tennis Performance Archive'
 }) => {
-  const [hasError, setHasError] = useState(false);
+  const [candidateIndex, setCandidateIndex] = useState(0);
+  const [hasFailedAll, setHasFailedAll] = useState(false);
 
-  if (hasError) {
+  // Generate resilient fallback candidates for GitHub Pages and subpaths
+  const base = import.meta.env.BASE_URL || './';
+  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+  const cleanSrc = src.startsWith('/') ? src.slice(1) : src;
+
+  const candidates = Array.from(
+    new Set([
+      src,
+      `${cleanBase}${cleanSrc}`,
+      `./${cleanSrc}`,
+      `/${cleanSrc}`,
+      `/Tennis-portfolio/${cleanSrc}`,
+      `/tennis-portfolio/${cleanSrc}`,
+      cleanSrc.includes('/') ? cleanSrc : `images/${cleanSrc}`
+    ])
+  );
+
+  useEffect(() => {
+    setCandidateIndex(0);
+    setHasFailedAll(false);
+  }, [src]);
+
+  const handleImgError = () => {
+    if (candidateIndex + 1 < candidates.length) {
+      setCandidateIndex((prev) => prev + 1);
+    } else {
+      setHasFailedAll(true);
+    }
+  };
+
+  if (hasFailedAll) {
     return (
       <div
         className={`flex flex-col items-center justify-center bg-[#181A1F] text-[#F4F4F0] p-6 text-center select-none ${className}`}
@@ -40,10 +71,10 @@ export const ResilientImage: React.FC<ResilientImageProps> = ({
 
   return (
     <img
-      src={src}
+      src={candidates[candidateIndex]}
       alt={alt}
       referrerPolicy="no-referrer"
-      onError={() => setHasError(true)}
+      onError={handleImgError}
       className={className}
     />
   );
