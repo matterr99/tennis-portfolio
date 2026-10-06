@@ -11,6 +11,7 @@ import { ResilientImage } from './components/ResilientImage';
 import { ArticleReader } from './components/ArticleReader';
 import { ScorekeeperTool } from './components/ScorekeeperTool';
 import { SimpleScorekeeper } from './components/SimpleScorekeeper';
+import { GalleryPage } from './components/GalleryPage';
 import {
   ArrowLeft,
   BookOpen,
@@ -18,6 +19,7 @@ import {
   Construction,
   ExternalLink,
   Globe,
+  Image as ImageIcon,
   Layers,
   Trophy,
   UserCheck,
@@ -29,6 +31,7 @@ type ActivePage =
   | 'blog'
   | 'article'
   | 'tools'
+  | 'gallery'
   | 'scorekeeper-simple'
   | 'scorekeeper-complex';
 
@@ -53,6 +56,13 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOpenArticleById = (id: string) => {
+    const found = ARTICLES.find((a) => a.id === id || a.slug === id);
+    if (found) {
+      handleOpenArticle(found);
+    }
+  };
+
   const handleNavigate = (page: ActivePage) => {
     setActivePage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -62,24 +72,24 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-[#F4F4F0] text-[#111315] selection:bg-[#0051FF] selection:text-white">
       {/* Top Navigation Bar — Responsive across all screen sizes, especially mobile */}
       <header className="sticky top-0 z-40 bg-[#F4F4F0]/95 backdrop-blur-md border-b border-[#E2E2DC]">
-        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 min-h-14 sm:h-16 py-1.5 sm:py-0 flex items-center justify-between gap-1.5 sm:gap-3">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-13 sm:h-16 flex items-center justify-between gap-1 sm:gap-3">
           {/* Brand Identity */}
           <button
             onClick={() => handleNavigate('home')}
-            className="text-left group flex items-center gap-1.5 sm:gap-2.5 focus:outline-none shrink-0 cursor-pointer"
+            className="text-left group flex items-center gap-1 sm:gap-2 focus:outline-none shrink-0 cursor-pointer"
           >
-            <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#0051FF] inline-block transition-transform group-hover:scale-125 shrink-0" />
-            <span className="font-serif text-base sm:text-2xl tracking-tight text-[#111315] font-normal whitespace-nowrap">
+            <span className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 bg-[#0051FF] inline-block transition-transform group-hover:scale-125 shrink-0" />
+            <span className="font-serif text-xs xs:text-sm sm:text-xl md:text-2xl tracking-tight text-[#111315] font-normal whitespace-nowrap">
               {t.brandName}
             </span>
           </button>
 
           {/* Navigation Links & Language Toggle */}
-          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
-            <nav className="flex items-center gap-0.5 sm:gap-1.5">
+          <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
+            <nav className="flex items-center gap-0.5 sm:gap-1">
               <button
                 onClick={() => handleNavigate('home')}
-                className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                className={`px-1.5 sm:px-3 py-1 sm:py-1.5 text-[10px] xs:text-[11px] sm:text-xs md:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
                   activePage === 'home'
                     ? 'bg-[#111315] text-white'
                     : 'text-[#5A6065] hover:text-[#111315] hover:bg-[#E2E2DC]/50'
@@ -89,7 +99,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => handleNavigate('blog')}
-                className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                className={`px-1.5 sm:px-3 py-1 sm:py-1.5 text-[10px] xs:text-[11px] sm:text-xs md:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
                   activePage === 'blog' || activePage === 'article'
                     ? 'bg-[#111315] text-white'
                     : 'text-[#5A6065] hover:text-[#111315] hover:bg-[#E2E2DC]/50'
@@ -99,7 +109,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => handleNavigate('tools')}
-                className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                className={`px-1.5 sm:px-3 py-1 sm:py-1.5 text-[10px] xs:text-[11px] sm:text-xs md:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
                   activePage === 'tools' ||
                   activePage === 'scorekeeper-simple' ||
                   activePage === 'scorekeeper-complex'
@@ -107,19 +117,29 @@ export default function App() {
                     : 'text-[#5A6065] hover:text-[#111315] hover:bg-[#E2E2DC]/50'
                 }`}
               >
-                {isEs ? 'Herramientas' : 'Tools'}
+                {t.navTools}
+              </button>
+              <button
+                onClick={() => handleNavigate('gallery')}
+                className={`px-1.5 sm:px-3 py-1 sm:py-1.5 text-[10px] xs:text-[11px] sm:text-xs md:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                  activePage === 'gallery'
+                    ? 'bg-[#111315] text-white'
+                    : 'text-[#5A6065] hover:text-[#111315] hover:bg-[#E2E2DC]/50'
+                }`}
+              >
+                {t.navGallery}
               </button>
             </nav>
 
-            <div className="h-4 w-[1px] bg-[#D5D5CE] mx-0.5" />
+            <div className="h-3 sm:h-4 w-[1px] bg-[#D5D5CE] mx-0.5" />
 
             {/* Language Switch Button */}
             <button
               onClick={toggleLanguage}
               aria-label="Toggle language between English and Spanish"
-              className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-mono uppercase tracking-wider border border-[#111315] bg-white hover:bg-[#0051FF] hover:text-white hover:border-[#0051FF] text-[#111315] transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-1 text-[10px] sm:text-xs font-mono uppercase tracking-wider border border-[#111315] bg-white hover:bg-[#0051FF] hover:text-white hover:border-[#0051FF] text-[#111315] transition-colors cursor-pointer shrink-0"
             >
-              <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#0051FF]" />
+              <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#0051FF]" />
               <span className="sm:hidden">{lang === 'en' ? 'ES' : 'EN'}</span>
               <span className="hidden sm:inline">{lang === 'en' ? 'ES · Español' : 'EN · English'}</span>
             </button>
@@ -141,7 +161,7 @@ export default function App() {
                 fallbackLabel="Miami Open Court"
               />
               {/* Light, balanced vignette so the stadium court photo shines through clearly while keeping text legible */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/25 to-black/60" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/45" />
             </div>
 
             {/* Hero Center Content — Directly over the Miami Open background with no blur box */}
@@ -159,32 +179,40 @@ export default function App() {
                 {t.heroSubtitle}
               </p>
 
-              {/* Primary 3 Action Buttons with color + transparency */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-xl mx-auto">
+              {/* Primary 4 Action Buttons — Distinct individual colors with frosted glass blur */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 max-w-2xl mx-auto">
                 <a
                   href={LINKEDIN_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black/45 hover:bg-black/65 backdrop-blur-md text-white border border-white/45 font-semibold text-sm sm:text-base transition-all shadow-lg cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-3 bg-black/30 hover:bg-black/50 backdrop-blur-xl text-white border border-white/40 font-semibold text-xs sm:text-sm transition-all shadow-lg cursor-pointer"
                 >
                   <span>{t.aboutMeBtn}</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-85" />
+                  <ExternalLink className="w-3.5 h-3.5 opacity-85 shrink-0" />
                 </a>
 
                 <button
                   onClick={() => handleNavigate('blog')}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#0051FF]/75 hover:bg-[#0051FF]/90 backdrop-blur-md text-white border border-[#80B8FF]/50 font-semibold text-sm sm:text-base transition-all shadow-lg cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-3 bg-[#0051FF]/45 hover:bg-[#0051FF]/65 backdrop-blur-xl text-white border border-[#80B8FF]/55 font-semibold text-xs sm:text-sm transition-all shadow-lg cursor-pointer"
                 >
-                  <BookOpen className="w-4 h-4" />
+                  <BookOpen className="w-3.5 h-3.5 shrink-0" />
                   <span>{t.readBlogBtn}</span>
                 </button>
 
                 <button
                   onClick={() => handleNavigate('tools')}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#D2F800]/80 hover:bg-[#D2F800]/95 backdrop-blur-md text-[#111315] border border-[#D2F800] font-bold text-sm sm:text-base transition-all shadow-lg cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-3 bg-[#D2F800]/50 hover:bg-[#D2F800]/75 backdrop-blur-xl text-[#111315] border border-[#D2F800]/70 font-bold text-xs sm:text-sm transition-all shadow-lg cursor-pointer"
                 >
-                  <Wrench className="w-4 h-4" />
+                  <Wrench className="w-3.5 h-3.5 shrink-0" />
                   <span>{t.tennisToolsBtn}</span>
+                </button>
+
+                <button
+                  onClick={() => handleNavigate('gallery')}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-3 bg-white/20 hover:bg-white/35 backdrop-blur-xl text-white border border-white/40 font-semibold text-xs sm:text-sm transition-all shadow-lg cursor-pointer"
+                >
+                  <ImageIcon className="w-3.5 h-3.5 shrink-0" />
+                  <span>{t.galleryBtn}</span>
                 </button>
               </div>
             </div>
@@ -299,7 +327,7 @@ export default function App() {
             article={selectedArticle}
             lang={lang}
             onBack={() => handleNavigate('blog')}
-            onSelectArticle={handleOpenArticle}
+            onSelectArticle={handleOpenArticleById}
           />
         )}
 
@@ -464,6 +492,14 @@ export default function App() {
           </div>
         )}
 
+        {/* ================= GALLERY PAGE ================= */}
+        {activePage === 'gallery' && (
+          <GalleryPage
+            lang={lang}
+            onNavigateHome={() => handleNavigate('home')}
+          />
+        )}
+
         {/* ================= SCOREKEEPER SIMPLE MVP (Original Direct Winner/Error Tracker) ================= */}
         {activePage === 'scorekeeper-simple' && (
           <div className="flex-1 py-4 sm:py-10 px-2.5 sm:px-6">
@@ -509,6 +545,12 @@ export default function App() {
                 className="hover:text-[#0051FF] transition-colors cursor-pointer"
               >
                 {t.navTools}
+              </button>
+              <button
+                onClick={() => handleNavigate('gallery')}
+                className="hover:text-[#0051FF] transition-colors cursor-pointer"
+              >
+                {t.navGallery}
               </button>
             </div>
           </div>

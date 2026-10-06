@@ -31,6 +31,7 @@ export const UI_TEXT = {
     aboutMeBtn: 'About Me',
     readBlogBtn: 'Read Blog',
     tennisToolsBtn: 'Tennis Tools',
+    galleryBtn: 'Gallery',
     backToPortfolio: '← Back to Portfolio',
     returnToPortfolio: 'Return to Portfolio',
     backToBlog: '← Back to Blog',
@@ -52,7 +53,12 @@ export const UI_TEXT = {
     langToggleLabel: 'ES · Español',
     navHome: 'Home',
     navBlog: 'Blog',
-    navTools: 'Tennis Tools'
+    navTools: 'Tools',
+    navGallery: 'Gallery',
+    galleryTitle: 'Visual Archives & Photography',
+    gallerySubtitle: 'A curated visual index capturing Grand Slam arenas, surface textures, and on-court biomechanical movement.',
+    allPhotos: 'All Photos',
+    galleryReturnBtn: 'Return to Portfolio'
   },
   es: {
     brandName: 'Gabriel Vasquez',
@@ -63,6 +69,7 @@ export const UI_TEXT = {
     aboutMeBtn: 'Sobre Mí',
     readBlogBtn: 'Leer Blog',
     tennisToolsBtn: 'Herramientas de Tenis',
+    galleryBtn: 'Galería',
     backToPortfolio: '← Volver al Portafolio',
     returnToPortfolio: 'Volver al Portafolio',
     backToBlog: '← Volver al Blog',
@@ -84,7 +91,12 @@ export const UI_TEXT = {
     langToggleLabel: 'EN · English',
     navHome: 'Inicio',
     navBlog: 'Artículos',
-    navTools: 'Herramientas'
+    navTools: 'Herramientas',
+    navGallery: 'Galería',
+    galleryTitle: 'Archivos Visuales y Fotografía',
+    gallerySubtitle: 'Un índice visual curado que captura estadios de Grand Slam, texturas de superficies y movimiento biomecánico en cancha.',
+    allPhotos: 'Todas las Fotos',
+    galleryReturnBtn: 'Volver al Portafolio'
   }
 };
 
